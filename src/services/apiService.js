@@ -1,3 +1,4 @@
+// services/apiService.js
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -7,10 +8,22 @@ const apiClient = axios.create({
   },
 });
 
+// Função para obter torneios
 export const getTourneys = () => {
   return apiClient.get('/tourneys');
 };
 
+// Função para criar um torneio
 export const createTourney = (data) => {
   return apiClient.post('/tourneys', data);
+};
+
+// Função para login
+export const loginUser = (email, password) => {
+  return apiClient.post('/login', { email, password });
+};
+
+// Função para registro
+export const registerUser = (username, email, password, confirmPassword) => {
+  return apiClient.post('/register', { name: username, email, password, password_confirmation: confirmPassword });
 };

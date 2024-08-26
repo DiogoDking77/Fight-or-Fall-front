@@ -1,17 +1,16 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaRegCompass, FaPlus, FaSignOutAlt } from 'react-icons/fa';
+import { FaRegCompass, FaSignOutAlt } from 'react-icons/fa';
 import { CgAdd } from "react-icons/cg";
 import { GrTrophy } from "react-icons/gr";
 import logo from '../assets/logo.png';
 
-function MySidebar({ logout }) {
+function MySidebar({ logout, onCreateTournamentClick }) {
     const location = useLocation();
 
     const sidebarBgColor = 'bg-[#0C0909]';
     const sidebarBorderColor = 'border-r-[#B22222]';
 
-    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
     const isHomePage = location.pathname === '/';
 
     if (isHomePage) {
@@ -37,13 +36,13 @@ function MySidebar({ logout }) {
                     </Link>
                 </li>
                 <li className="mb-3">
-                    <Link to="/create-tournament" className="flex items-center justify-center hover:bg-[#1a1212] p-1 rounded transition duration-300">
+                    <button onClick={onCreateTournamentClick} className="flex items-center justify-center hover:bg-[#1a1212] p-1 rounded transition duration-300">
                         <CgAdd className="w-8 h-8" />
-                    </Link>
+                    </button>
                 </li>
             </ul>
             <div className="flex justify-center mt-auto">
-                <button onClick={logout} className="flex items-center text-red-500 hover:bg-[#1a1212] p-2 rounded transition duration-300">
+            <button onClick={logout} className="flex items-center text-red-500 hover:bg-[#1a1212] p-2 rounded transition duration-300">
                     <FaSignOutAlt className="w-8 h-8" />
                 </button>
             </div>

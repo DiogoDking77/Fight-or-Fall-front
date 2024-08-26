@@ -4,6 +4,7 @@ import axios from '../axios'; // Importe o axios configurado
 import backgroundImage from '../assets/auth_img.jpg'; // Caminho para a imagem de fundo
 import { FaArrowLeft } from 'react-icons/fa';
 import logo from '../assets/logo.png';
+import { loginUser } from '../services/apiService'; // Importe a função de login
 
 function Login({ login, showSnackbar }) {
     const [email, setEmail] = useState('');
@@ -18,12 +19,11 @@ function Login({ login, showSnackbar }) {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/login', { email, password });
-            localStorage.setItem('authToken', response.data.token);
-            login();
+            const response = await loginUser(email, password); // Use a função de login
+            login(response.data.user);
         } catch (error) {
             console.error('Login error:', error.response?.data || error.message);
-            showSnackbar('Login failed. Please check your credentials.', 'error')
+            showSnackbar('Login failed. Please check your credentials.', 'error');
         }
     };
 
@@ -46,7 +46,7 @@ function Login({ login, showSnackbar }) {
                             <label className="block mb-1 font-bold">Email</label>
                             <input
                                 type="email"
-                                className="text-black w-full p-2 rounded border border-[#B22222] border-[3px]"
+                                className="text-black w-full p-2 rounded border-[#B22222] border-[3px]"
                                 placeholder="Your email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -57,7 +57,7 @@ function Login({ login, showSnackbar }) {
                             <label className="block mb-1 font-bold">Password</label>
                             <input
                                 type="password"
-                                className="text-black w-full p-2 rounded border border-[#B22222] border-[3px]"
+                                className="text-black w-full p-2 rounded border-[#B22222] border-[3px]"
                                 placeholder="Your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}

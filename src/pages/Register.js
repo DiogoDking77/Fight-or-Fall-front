@@ -4,6 +4,7 @@ import axios from '../axios'; // Importe o axios configurado
 import backgroundImage from '../assets/auth_img.jpg'; // Caminho para a imagem de fundo
 import { FaArrowLeft } from 'react-icons/fa';
 import logo from '../assets/logo.png';
+import { registerUser } from '../services/apiService';
 
 function Register({ login, showSnackbar }) {
     const [username, setUsername] = useState('');
@@ -26,12 +27,12 @@ function Register({ login, showSnackbar }) {
             return;
         }
         try {
-            const response = await axios.post('/register', { email, password, name: username, password_confirmation: confirmPassword });
+            const response = await registerUser(username, email, password, confirmPassword); // Use a função de registro
             localStorage.setItem('authToken', response.data.token);
             login();
         } catch (error) {
             console.error('Registration error:', error.response?.data || error.message);
-            showSnackbar('Register failed. Please check your credentials.', 'error')
+            showSnackbar('Register failed. Please check your credentials.', 'error');
         }
     };
 

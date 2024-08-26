@@ -4,6 +4,7 @@ module.exports = {
     "./src/App.js",
     "./src/components/MySidebar.js",
     "./src/components/Snackbar.js",
+    "./src/components/CreateTournamentModal.js",
     "./src/pages/Home.js",
     "./src/pages/Register.js",
     "./src/pages/Login.js",
