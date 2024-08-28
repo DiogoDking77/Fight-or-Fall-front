@@ -4,11 +4,12 @@ import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Tourneys from './Tourneys';
 import MyTourneys from './MyTourneys';
+import TourneyPage from './TourneyPage';
 import CreateTournamentModal from '../components/CreateTournamentModal';
 import MySidebar from '../components/MySidebar';
 import { createTourney } from '../services/apiService';
 
-function Dashboard({ logout,  userId, userName  }) { // Recebe o userId como prop
+function Dashboard({ logout, userId, userName }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleOpenModal = () => {
@@ -23,7 +24,7 @@ function Dashboard({ logout,  userId, userName  }) { // Recebe o userId como pro
     try {
       const tournamentPayload = {
         ...tournamentData,
-        user_creator_id:userId, // Usa o ID do usuário conectado
+        user_creator_id: userId,
       };
 
       const response = await createTourney(tournamentPayload);
@@ -31,7 +32,6 @@ function Dashboard({ logout,  userId, userName  }) { // Recebe o userId como pro
       setIsModalVisible(false);
     } catch (error) {
       console.error('Erro ao criar torneio:', error);
-      // Adicione aqui alguma lógica de tratamento de erro, como exibir uma mensagem de erro
     }
   };
 
@@ -41,7 +41,8 @@ function Dashboard({ logout,  userId, userName  }) { // Recebe o userId como pro
       <div className="flex-1">
         <Routes>
           <Route path="tourneys" element={<Tourneys />} />
-          <Route path="my-tourneys" element={<MyTourneys />} />
+          <Route path="my-tourneys" element={<MyTourneys userId={userId} />} />
+          <Route path="tourneys/:id" element={<TourneyPage />} /> {/* Nova rota */}
         </Routes>
       </div>
       {isModalVisible && (

@@ -13,6 +13,14 @@ export const getTourneys = () => {
   return apiClient.get('/tourneys');
 };
 
+export const getTourneyById = (id) => {
+  return apiClient.get(`/tourneys/${id}`);
+};
+
+export const getTourneysByCreator = (creatorId) => {
+  return apiClient.get(`/tourneys/creator/${creatorId}`);
+};
+
 // Função para criar um torneio
 export const createTourney = (data) => {
   return apiClient.post('/tourneys', data);
