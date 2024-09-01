@@ -6,6 +6,8 @@ module.exports = {
     "./src/components/Snackbar.js",
     "./src/components/CreateTournamentModal.js",
     "./src/components/CreateEditionModal.js",
+    "./src/components/BracketComponent.js",
+    "./src/components/BracketCanvas.js",
     "./src/pages/Home.js",
     "./src/pages/Register.js",
     "./src/pages/Login.js",
@@ -17,6 +19,8 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    //require('tailwind-scrollbar')
+  ],
 }
 

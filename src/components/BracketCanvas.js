@@ -1,9 +1,7 @@
-// src/components/BracketCanvas.js
-
 import React, { useRef, useEffect, useState } from 'react';
 import BracketComponent from './BracketComponent';
 
-const BracketCanvas = ({ numParticipants }) => {
+const BracketCanvas = ({ numParticipants, participantNames, isManualDraw }) => {
   const canvasRef = useRef(null);
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -51,7 +49,7 @@ const BracketCanvas = ({ numParticipants }) => {
 
   return (
     <div
-      className="relative w-full h-full"
+      className="relative w-full h-full bg-[#1F1E1E] border border-[#B22222] rounded"
       style={{ overflow: 'hidden' }}
     >
       <div
@@ -64,6 +62,8 @@ const BracketCanvas = ({ numParticipants }) => {
       >
         <BracketComponent
           numParticipants={numParticipants}
+          participantNames={participantNames}
+          isManualDraw={isManualDraw}
         />
       </div>
     </div>

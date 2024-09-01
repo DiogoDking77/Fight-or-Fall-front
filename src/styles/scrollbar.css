@@ -1,0 +1,25 @@
+/* src/styles/scrollbar.css */
+
+.scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #B22222 #0C0909; /* cor do thumb e do track */
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #0C0909;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #B22222;
+    border-radius: 10px;
+    border: 2px solid #0C0909;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #9B1B1B;
+  }
+  
