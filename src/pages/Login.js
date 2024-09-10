@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../axios'; // Importe o axios configurado
-import backgroundImage from '../assets/auth_img.jpg'; // Caminho para a imagem de fundo
 import { FaArrowLeft } from 'react-icons/fa';
+import ClipLoader from 'react-spinners/ClipLoader'; // Importe o ClipLoader
 import logo from '../assets/logo.png';
-import { loginUser } from '../services/apiService'; // Importe a função de login
+import backgroundImage from '../assets/auth_img.jpg';
+import { loginUser } from '../services/apiService';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
-function Login({ login, showSnackbar }) {
+function Login({ login }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false); // Estado para controlar o carregamento
+    const { showSnackbar } = useSnackbar();
 
-    // Use useEffect to clear form fields on mount
     useEffect(() => {
         setEmail('');
         setPassword('');
@@ -18,12 +20,16 @@ function Login({ login, showSnackbar }) {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true); // Inicia o loading
         try {
-            const response = await loginUser(email, password); // Use a função de login
+            const response = await loginUser(email, password);
             login(response.data.user);
+            showSnackbar('Login successful. Hello ' + response.data.user.name + '!', 'success');
         } catch (error) {
             console.error('Login error:', error.response?.data || error.message);
             showSnackbar('Login failed. Please check your credentials.', 'error');
+        } finally {
+            setLoading(false); // Termina o loading
         }
     };
 
@@ -51,6 +57,7 @@ function Login({ login, showSnackbar }) {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={loading} // Desabilita durante o loading
                             />
                         </div>
                         <div className="mb-4">
@@ -62,12 +69,19 @@ function Login({ login, showSnackbar }) {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={loading} // Desabilita durante o loading
                             />
                         </div>
                     </div>
                     <div className="pb-10">
                         <div className="flex justify-center">
-                            <button type="submit" className="bg-[#8B0000] text-white p-2 rounded font-bold px-16 py-3">Login</button>
+                            <button
+                                type="submit"
+                                className="bg-[#8B0000] text-white p-2 rounded font-bold px-16 py-3"
+                                disabled={loading} // Desabilita o botão durante o loading
+                            >
+                                {loading ? <ClipLoader color="#ffffff" size={24} /> : 'Login'} {/* Mostra o loader ou o texto */}
+                            </button>
                         </div>
                         <div className="text-center mt-2">
                             <p>
@@ -80,7 +94,7 @@ function Login({ login, showSnackbar }) {
             
             {/* Imagem de fundo */}
             <div className="w-full md:w-6/12 bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }}>
-                {/* Imagem de fundo, pode adicionar mais estilizações aqui */}
+                {/* Imagem de fundo */}
             </div>
         </div>
     );

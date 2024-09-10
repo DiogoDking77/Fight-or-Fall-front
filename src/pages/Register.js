@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../axios'; // Importe o axios configurado
-import backgroundImage from '../assets/auth_img.jpg'; // Caminho para a imagem de fundo
 import { FaArrowLeft } from 'react-icons/fa';
+import ClipLoader from 'react-spinners/ClipLoader'; // Importe o ClipLoader
 import logo from '../assets/logo.png';
+import backgroundImage from '../assets/auth_img.jpg';
 import { registerUser } from '../services/apiService';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
-function Register({ login, showSnackbar }) {
+function Register({ login }) {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false); // Estado para controlar o carregamento
+    const { showSnackbar } = useSnackbar();
 
-    // Use useEffect to clear form fields on mount
     useEffect(() => {
         setUsername('');
         setEmail('');
@@ -26,13 +28,19 @@ function Register({ login, showSnackbar }) {
             alert('Passwords do not match');
             return;
         }
+
+        setLoading(true); // Inicia o loading
+
         try {
-            const response = await registerUser(username, email, password, confirmPassword); // Use a função de registro
+            const response = await registerUser(username, email, password, confirmPassword);
             localStorage.setItem('authToken', response.data.token);
-            login();
+            login(response.data.user);
+            showSnackbar('Registration successful. Hello ' + response.data.user.name + '!', 'success');
         } catch (error) {
             console.error('Registration error:', error.response?.data || error.message);
             showSnackbar('Register failed. Please check your credentials.', 'error');
+        } finally {
+            setLoading(false); // Termina o loading
         }
     };
 
@@ -60,6 +68,7 @@ function Register({ login, showSnackbar }) {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
+                                disabled={loading} // Desabilita o campo durante o loading
                             />
                         </div>
                         <div className="mb-4">
@@ -71,6 +80,7 @@ function Register({ login, showSnackbar }) {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={loading} // Desabilita o campo durante o loading
                             />
                         </div>
                         <div className="mb-4">
@@ -82,6 +92,7 @@ function Register({ login, showSnackbar }) {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={loading} // Desabilita o campo durante o loading
                             />
                         </div>
                         <div className="mb-4">
@@ -93,12 +104,19 @@ function Register({ login, showSnackbar }) {
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
+                                disabled={loading} // Desabilita o campo durante o loading
                             />
                         </div>
                     </div>
                     <div className="pb-10">
                         <div className="flex justify-center">
-                            <button type="submit" className="bg-[#8B0000] text-white p-2 rounded font-bold px-16 py-3">Register</button>
+                            <button
+                                type="submit"
+                                className="bg-[#8B0000] text-white p-2 rounded font-bold px-16 py-3"
+                                disabled={loading} // Desabilita o botão durante o loading
+                            >
+                                {loading ? <ClipLoader color="#ffffff" size={24} /> : 'Register'} {/* Mostra o loader ou o texto */}
+                            </button>
                         </div>
                         <div className="text-center mt-2">
                             <p>
@@ -111,7 +129,7 @@ function Register({ login, showSnackbar }) {
             
             {/* Imagem de fundo */}
             <div className="w-full md:w-6/12 bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }}>
-                {/* Imagem de fundo, pode adicionar mais estilizações aqui */}
+                {/* Imagem de fundo */}
             </div>
         </div>
     );
