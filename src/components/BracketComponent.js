@@ -2,7 +2,7 @@ import React from 'react';
 import { Bracket, Seed, SeedItem, SeedTeam } from 'react-brackets';
 
 // Função para gerar os dados do bracket
-const generateBracketData = (numParticipants, participantNames) => {
+const generateBracketData = (numParticipants, participantNames, isManualDraw) => {
   const num = parseInt(numParticipants, 10);
   const rounds = [];
 
@@ -12,8 +12,8 @@ const generateBracketData = (numParticipants, participantNames) => {
       name: `Participant ${i + 1}`,
     }));
 
-    // Substitua os nomes padrão pelos fornecidos
-    if (participantNames.length > 0) {
+    // Substitua os nomes padrão pelos fornecidos somente se isManualDraw for true
+    if (isManualDraw && participantNames.length > 0) {
       participants = participants.map((participant, index) => ({
         ...participant,
         name: participantNames[index] || participant.name,
@@ -65,7 +65,7 @@ const CustomSeed = ({ seed, breakpoint }) => {
 };
 
 const BracketComponent = ({ numParticipants, participantNames, isManualDraw }) => {
-  const rounds = generateBracketData(numParticipants, participantNames);
+  const rounds = generateBracketData(numParticipants, participantNames, isManualDraw);
 
   return (
     <Bracket

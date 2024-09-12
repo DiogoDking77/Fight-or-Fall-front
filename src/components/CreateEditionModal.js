@@ -4,7 +4,7 @@ import BracketCanvas from './BracketCanvas'; // Atualize o caminho conforme nece
 import '../styles/scrollbar.css'; // Certifique-se de que o caminho está correto
 import { useSnackbar } from '../contexts/SnackbarContext'; 
 
-const CreateEditionModal = ({ isOpen, onClose }) => {
+const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [editionData, setEditionData] = useState({
     name: '',
@@ -53,6 +53,12 @@ const CreateEditionModal = ({ isOpen, onClose }) => {
       participants: input,
     });
     setParticipantNames(participants);
+  };
+
+  const handleFinish = () => {
+    // Ação ao finalizar o formulário (exemplo: salvar dados, enviar ao backend, etc.)
+    showSnackbar('Tournament created successfully!', 'success');
+    onClose(); // Fecha o modal após concluir
   };
 
   const isManual = editionData.eliminationType === 'manual';
@@ -186,22 +192,37 @@ const CreateEditionModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="flex justify-between mt-6">
-          <button
-            onClick={handlePreviousStep}
-            className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
-            disabled={currentStep === 0}
-          >
-            <FaArrowLeft className="mr-2" />
-            Back
-          </button>
-          <button
-            onClick={handleNextStep}
-            className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
-            disabled={currentStep === steps.length - 1 || (currentStep === 1 && editionData.tournamentType !== 'singleElimination')}
-          >
-            Next
-            <FaArrowRight className="ml-2" />
-          </button>
+          {/* Botão "Back" só aparece se não for o primeiro passo */}
+          {currentStep > 0 && (
+            <button
+              onClick={handlePreviousStep}
+              className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
+            >
+              <FaArrowLeft className="mr-2" />
+              Back
+            </button>
+          )}
+          
+          {/* Se for a primeira etapa, centraliza o botão à direita */}
+          <div className={`flex ${currentStep === 0 ? 'justify-end w-full' : 'justify-end'}`}>
+            {currentStep === steps.length - 1 ? (
+              <button
+                onClick={handleFinish}
+                className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
+              >
+                Finish
+              </button>
+            ) : (
+              <button
+                onClick={handleNextStep}
+                className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
+                disabled={currentStep === 1 && editionData.tournamentType !== 'singleElimination'}
+              >
+                Next
+                <FaArrowRight className="ml-2" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

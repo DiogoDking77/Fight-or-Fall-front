@@ -106,6 +106,7 @@ function TourneyPage() {
           <CreateEditionModal 
             isOpen={isCreateEditionModalOpen} 
             onClose={closeCreateEditionModal} 
+            tourneyID ={tourney.id}
           />
         )}
       </div>
