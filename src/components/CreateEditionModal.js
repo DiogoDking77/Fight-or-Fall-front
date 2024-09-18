@@ -3,6 +3,7 @@ import { FaArrowLeft, FaArrowRight, FaTimes } from 'react-icons/fa';
 import BracketCanvas from './BracketCanvas'; // Atualize o caminho conforme necessário
 import '../styles/scrollbar.css'; // Certifique-se de que o caminho está correto
 import { useSnackbar } from '../contexts/SnackbarContext'; 
+import { createEdition, createSingleEliminationTournament } from '../services/apiService'; // Importando os serviços
 
 const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -55,10 +56,42 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
     setParticipantNames(participants);
   };
 
-  const handleFinish = () => {
-    // Ação ao finalizar o formulário (exemplo: salvar dados, enviar ao backend, etc.)
-    showSnackbar('Tournament created successfully!', 'success');
-    onClose(); // Fecha o modal após concluir
+  const handleFinish = async () => {
+    try {
+      // Preparar os dados da edição para envio
+      const editionPayload = {
+        name: editionData.name,
+        start_date: editionData.startDate,
+        type: editionData.tournamentType, // Aqui o type vai ser o tipo do torneio
+        n_participants: editionData.numParticipants,
+        current_phase: 1, // Começa na primeira fase
+        tourney_id: tourneyId,
+        edition_order: 1,
+      };
+
+      // Criar a edição
+      const editionResponse = await createEdition(editionPayload);
+
+      // Verificar se é um torneio de eliminação simples e criar o torneio
+      if (editionData.tournamentType === 'Single Elimination') {
+        const tournamentPayload = {
+          id_edition: editionResponse.data.edition.id,
+          id_phase:editionResponse.data.phases_ids[0],
+          n_participants: editionData.numParticipants,
+          participants: participantNames,
+          isRandomDraw: editionData.eliminationType === "computer", // Manual ou Computador
+        };
+
+        await createSingleEliminationTournament(tournamentPayload);
+      }
+
+      showSnackbar('Edition and Tournament created successfully!', 'success');
+      onClose(); // Fecha o modal após concluir
+
+    } catch (error) {
+      console.error('Error creating edition or tournament:', error);
+      showSnackbar('Failed to create edition or tournament.', 'error');
+    }
   };
 
   const isManual = editionData.eliminationType === 'manual';
@@ -116,7 +149,7 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
                 className="text-black w-full p-2 rounded border-[#B22222] border-[3px]"
               >
                 <option value="">Select...</option>
-                <option value="singleElimination">Single Elimination</option>
+                <option value="Single Elimination">Single Elimination</option>
                 <option value="roundRobin">Round Robin</option>
                 <option value="doubleElimination">Double Elimination</option>
                 <option value="groupsAndKnockout">Groups and Knockout</option>
@@ -125,7 +158,7 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
             </div>
           )}
 
-          {currentStep === 1 && editionData.tournamentType === 'singleElimination' && (
+          {currentStep === 1 && editionData.tournamentType === 'Single Elimination' && (
             <div>
               <h2 className="text-xl font-bold mb-4">Single Elimination Settings</h2>
               <label className="block mb-2">Number of Participants</label>
@@ -155,7 +188,7 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
             </div>
           )}
 
-          {currentStep === 1 && editionData.tournamentType !== 'singleElimination' && (
+          {currentStep === 1 && editionData.tournamentType !== 'Single Elimination' && (
             <div>
               <h2 className="text-xl font-bold mb-4">Tournament Specifics</h2>
               <p>This tourney type is still under development. Go back and choose Single Elimination.</p>
@@ -216,7 +249,7 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
               <button
                 onClick={handleNextStep}
                 className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
-                disabled={currentStep === 1 && editionData.tournamentType !== 'singleElimination'}
+                disabled={currentStep === 1 && editionData.tournamentType !== 'Single Elimination'}
               >
                 Next
                 <FaArrowRight className="ml-2" />

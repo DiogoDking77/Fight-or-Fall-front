@@ -35,3 +35,17 @@ export const loginUser = (email, password) => {
 export const registerUser = (username, email, password, confirmPassword) => {
   return apiClient.post('/register', { name: username, email, password, password_confirmation: confirmPassword });
 };
+
+export const createEdition = (data) => {
+  return apiClient.post('/editions', data);
+};
+
+// Função para deletar uma edição por ID
+export const deleteEdition = (id) => {
+  return apiClient.delete(`/editions/${id}`);
+};
+
+// Função para criar um torneio de Single Elimination
+export const createSingleEliminationTournament = (data) => {
+  return apiClient.post('/tournaments/single-elimination', data);
+};
