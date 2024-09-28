@@ -5,7 +5,7 @@ import '../styles/scrollbar.css'; // Certifique-se de que o caminho está corret
 import { useSnackbar } from '../contexts/SnackbarContext'; 
 import { createEdition, createSingleEliminationTournament } from '../services/apiService'; // Importando os serviços
 
-const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
+const CreateEditionModal = ({ isOpen, onClose, tourneyId, onEditionCreated }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [editionData, setEditionData] = useState({
     name: '',
@@ -85,12 +85,13 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId }) => {
         await createSingleEliminationTournament(tournamentPayload);
       }
 
-      showSnackbar('Edition and Tournament created successfully!', 'success');
+      showSnackbar('Edition created successfully!', 'success');
+      onEditionCreated();
       onClose(); // Fecha o modal após concluir
 
     } catch (error) {
       console.error('Error creating edition or tournament:', error);
-      showSnackbar('Failed to create edition or tournament.', 'error');
+      showSnackbar('Failed to create edition', 'error');
     }
   };
 

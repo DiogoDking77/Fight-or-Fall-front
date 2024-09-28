@@ -49,3 +49,8 @@ export const deleteEdition = (id) => {
 export const createSingleEliminationTournament = (data) => {
   return apiClient.post('/tournaments/single-elimination', data);
 };
+
+export const getMatchesByPhaseId = (phaseId) => {
+  return apiClient.get(`/phase/${phaseId}/matches`);
+};
+
