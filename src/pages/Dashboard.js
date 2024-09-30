@@ -1,6 +1,6 @@
 // pages/Dashboard.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Tourneys from './Tourneys';
 import MyTourneys from './MyTourneys';
@@ -11,6 +11,7 @@ import { createTourney } from '../services/apiService';
 
 function Dashboard({ logout, userId, userName }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false); // Para evitar chamadas duplicadas
 
   const handleOpenModal = () => {
     setIsModalVisible(true);
@@ -35,6 +36,18 @@ function Dashboard({ logout, userId, userName }) {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (hasFetched) return; // Verifica se já foi buscado
+
+      setHasFetched(true);
+      // Sua chamada de API ou lógica aqui
+      console.log('Fetch data on dashboard');
+    };
+
+    fetchData();
+  }, []); // Dependências de acordo com a necessidade
+
   return (
     <div className="flex">
       <MySidebar logout={logout} onCreateTournamentClick={handleOpenModal} />
@@ -42,7 +55,7 @@ function Dashboard({ logout, userId, userName }) {
         <Routes>
           <Route path="tourneys" element={<Tourneys />} />
           <Route path="my-tourneys" element={<MyTourneys userId={userId} />} />
-          <Route path="tourneys/:id" element={<TourneyPage />} /> {/* Nova rota */}
+          <Route path="tourneys/:id" element={<TourneyPage />} />
         </Routes>
       </div>
       {isModalVisible && (

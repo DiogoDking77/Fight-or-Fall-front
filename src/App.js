@@ -5,23 +5,28 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-//import Snackbar from './components/Snackbar';
-import { SnackbarProvider } from './contexts/SnackbarContext'; // Atualize o caminho conforme necessário
+import { SnackbarProvider } from './contexts/SnackbarContext';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
   const [userName, setUserName] = useState('');
+  const [loading, setLoading] = useState(true); // Adicione um estado de carregamento
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
     const storedUserName = localStorage.getItem('userName');
+
+    console.log("Stored User ID:", storedUserId);
+    console.log("Stored User Name:", storedUserName);
 
     if (storedUserId && storedUserName) {
       setIsAuthenticated(true);
       setUserId(storedUserId);
       setUserName(storedUserName);
     }
+    
+    setLoading(false); // Marque como carregamento concluído após verificar o localStorage
   }, []);
 
   const login = (user) => {
@@ -31,7 +36,6 @@ function App() {
 
     localStorage.setItem('userId', user.id);
     localStorage.setItem('userName', user.name);
-    // No need to call showSnackbar here anymore
   };
 
   const logout = () => {
@@ -42,8 +46,14 @@ function App() {
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
     localStorage.removeItem('authToken');
-    // No need to call showSnackbar here anymore
   };
+
+  console.log("Is Authenticated:", isAuthenticated);
+
+  // Enquanto estiver carregando, não renderize nada ou renderize um loader
+  if (loading) {
+    return <div>Loading...</div>; // Ou um spinner
+  }
 
   return (
     <SnackbarProvider>

@@ -51,7 +51,7 @@ function CreateTournamentModal({ onClose, onCreate }) {
           </div>
           <div className="flex justify-end space-x-4">
             <button type="button" className="bg-[#302B2B] text-white px-4 py-2 rounded" onClick={onClose}>Cancel</button>
-            <button type="submit" className="bg-[#8B0000] text-white px-4 py-2 rounded">Create</button>
+            <button type="submit" className="bg-[#8B0000] text-white px-4 py-2 rounded hover:bg-[#a10505]">Create</button>
           </div>
         </form>
       </div>
