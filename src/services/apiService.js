@@ -54,3 +54,6 @@ export const getMatchesByPhaseId = (phaseId) => {
   return apiClient.get(`/phase/${phaseId}/matches`);
 };
 
+export const updateSingleEliminationResults = (data, phaseId) => {
+  return apiClient.post(`/phase/${phaseId}/update-single-elimination`, data);
+};

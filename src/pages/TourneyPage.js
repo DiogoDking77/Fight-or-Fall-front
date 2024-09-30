@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getTourneyById, getMatchesByPhaseId } from '../services/apiService';
+import { getTourneyById, getMatchesByPhaseId, updateSingleEliminationResults } from '../services/apiService';
 import { FaArrowLeft, FaArrowRight, FaInfoCircle, FaPlus, FaSave } from 'react-icons/fa';
 import ClipLoader from 'react-spinners/ClipLoader';
 import editionImage from '../assets/edition.png';
 import CreateEditionModal from '../components/CreateEditionModal';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 function TourneyPage() {
   const { id } = useParams();
@@ -18,6 +19,8 @@ const [activeRoundIndex, setActiveRoundIndex] = useState(0);
 const [matchesByRound, setMatchesByRound] = useState({});
 const [updatedMatchesByRound, setUpdatedMatchesByRound] = useState({}); // Copia para armazenar resultados
 const [loadingEdition, setLoadingEdition] = useState(false);
+const [loadingSave, setLoadingSave] = useState(false); // Adicionando estado para controle do spinner durante o save
+const { showSnackbar } = useSnackbar(); // Hook para o Snackbar
 
 
 
@@ -110,8 +113,80 @@ const fetchMatchesForEdition = async (edition) => {
   };
 
   const handleSave = async () => {
+    if (!activeEdition || !activeEdition.phases || activeEdition.phases.length === 0) {
+        console.error('Nenhuma fase disponível para salvar.');
+        return;
+    }
+
+    setLoadingSave(true); // Ativando o loading do save
+    const phaseId = activeEdition.phases[0].id;
+
+    const matchesToUpdate = [];
+    console.log(updatedMatchesByRound)
+
+    // Verificar se há empates
+    for (const roundKey in updatedMatchesByRound) {
+      const matches = updatedMatchesByRound[roundKey];
+      for (const match of matches) {
+        const score1 = match.score1;
+        const score2 = match.score2;
     
-  };
+        // Verifica se ambos os scores estão vazios
+        const areScoresEmpty = (score1 === "" && score2 === "") || (score1 === undefined && score2 === undefined);
+    
+        // Permitir que scores sejam em branco (""), mas impedir empates se ambos forem números inteiros
+        const isScore1Valid = score1 !== "" || score1 !== undefined;
+        const isScore2Valid = score2 !== "" || score2 !== undefined;
+    
+        // Verifica se ambos os scores são válidos e se são iguais, ignorando se ambos estão vazios
+        if (!areScoresEmpty && isScore1Valid && isScore2Valid && score1 === score2) {
+          showSnackbar('Empates não são permitidos nas partidas!', 'error'); // Exibe a mensagem de erro
+          setLoadingSave(false);
+          return; // Não prosseguir se houver empate
+        }
+      }
+    }
+    
+
+    for (const roundKey in updatedMatchesByRound) {
+        const matches = updatedMatchesByRound[roundKey];
+
+        if (Array.isArray(matches)) {
+            matches.forEach(match => {
+                if (match && typeof match === 'object') {
+                    matchesToUpdate.push({
+                        id_match: match.id_match,
+                        round: match.round,
+                        score1: match.score1,
+                        score2: match.score2,
+                        participant_1: {
+                            name: match.participant_1?.name || null,
+                        },
+                        participant_2: {
+                            name: match.participant_2?.name || null,
+                        },
+                        id_bracket: {
+                            winner_match_id: match.id_bracket?.winner_match_id || null,
+                        }
+                    });
+                }
+            });
+        } else {
+            console.error(`Erro: esperado um array para ${roundKey}, mas obteve ${typeof matches}`);
+        }
+    }
+
+    try {
+        await updateSingleEliminationResults(matchesToUpdate, phaseId);
+        console.log('Resultados atualizados com sucesso!');
+        refreshTourney();
+    } catch (error) {
+        console.error('Erro ao salvar os resultados:', error);
+    } finally {
+        setLoadingSave(false); // Desativando o loading do save
+    }
+};
+
   
   
   if (loading) {
@@ -190,26 +265,26 @@ const fetchMatchesForEdition = async (edition) => {
                               </h3>
                               {matchesByRound[roundKey].map((match, idx) => (
                                 <div key={idx} className="bg-zinc-950 p-2 mb-4 rounded-lg">
-                                  <div className="flex justify-between">
-                                    <p>{match.participant_1?.name || 'TBD'}</p>
-                                    <input
-                                      type="number" // Definir como input numérico
-                                      value={updatedMatchesByRound[roundKey][idx].score1 || ''}
-                                      className="text-black px-2 rounded border-[#B22222] border-[2px] w-16" // Adicionar largura fixa
-                                      onChange={(e) => handleScoreChange(e, roundKey, idx, 'score1')}
-                                    />
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <p>{match.participant_2?.name || 'TBD'}</p>
-                                    <input
-                                      type="number" // Definir como input numérico
-                                      value={updatedMatchesByRound[roundKey][idx].score2 || ''}
-                                      className="text-black px-2 rounded border-[#B22222] border-[2px] w-16" // Adicionar largura fixa
-                                      onChange={(e) => handleScoreChange(e, roundKey, idx, 'score2')}
-                                    />
-                                  </div>
+                                    <div className="flex justify-between">
+                                        <p>{match.participant_1?.name || 'TBD'}</p>
+                                        <input
+                                            type="number" // Definir como input numérico
+                                            value={updatedMatchesByRound[roundKey][idx].score1 !== undefined ? updatedMatchesByRound[roundKey][idx].score1 : ''} // Mostrar 0 ou o valor correto
+                                            className="text-black px-2 rounded border-[#B22222] border-[2px] w-16" // Adicionar largura fixa
+                                            onChange={(e) => handleScoreChange(e, roundKey, idx, 'score1')}
+                                        />
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <p>{match.participant_2?.name || 'TBD'}</p>
+                                        <input
+                                            type="number" // Definir como input numérico
+                                            value={updatedMatchesByRound[roundKey][idx].score2 !== undefined ? updatedMatchesByRound[roundKey][idx].score2 : ''} // Mostrar 0 ou o valor correto
+                                            className="text-black px-2 rounded border-[#B22222] border-[2px] w-16" // Adicionar largura fixa
+                                            onChange={(e) => handleScoreChange(e, roundKey, idx, 'score2')}
+                                        />
+                                    </div>
                                 </div>
-                              ))}
+                            ))}
                             </div>
                           </div>
                         );
@@ -241,14 +316,14 @@ const fetchMatchesForEdition = async (edition) => {
                 </button>
               
 
-              {/* Botão Save centralizado */}
-              <button
-                onClick={handleSave}
-                className="bg-[#8B0000] text-white p-2 rounded-lg hover:bg-[#a10505] flex items-center mx-auto"
-              >
-                <FaSave className="mr-2" />
-                Save Results
-              </button>
+                {/* Botão Save centralizado */}
+                <button
+                    className="px-4 py-2 bg-[#8B0000] text-white rounded hover:bg-[#a10505] transition-colors duration-300 flex items-center"
+                    onClick={handleSave}
+                    disabled={loadingSave}
+                >
+                    {loadingSave ? <ClipLoader color="#FFFFFF" loading={loadingSave} size={20} /> : <><FaSave className="mr-2" /> Save Results</>}
+                </button>
 
               
                 <button
