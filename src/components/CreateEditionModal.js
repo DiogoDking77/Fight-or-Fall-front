@@ -4,6 +4,7 @@ import BracketCanvas from './BracketCanvas'; // Atualize o caminho conforme nece
 import '../styles/scrollbar.css'; // Certifique-se de que o caminho está correto
 import { useSnackbar } from '../contexts/SnackbarContext'; 
 import { createEdition, createSingleEliminationTournament } from '../services/apiService'; // Importando os serviços
+import ClipLoader from 'react-spinners/ClipLoader';
 
 const CreateEditionModal = ({ isOpen, onClose, tourneyId, onEditionCreated }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -17,6 +18,7 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId, onEditionCreated }) =>
   });
   const [participantNames, setParticipantNames] = useState([]);
   const { showSnackbar } = useSnackbar();
+  const [loadingFinish, setLoadingSave] = useState(false);
 
   const steps = [
     'Basic Information',
@@ -57,43 +59,57 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId, onEditionCreated }) =>
   };
 
   const handleFinish = async () => {
+    // Verifica se o número de participantes é um número válido
+    setLoadingSave(true);
+    const numParticipants = parseInt(editionData.numParticipants, 10);
+    
+    // Validação para garantir que o número de participantes está correto
+    if (participantNames.length !== numParticipants) {
+        setLoadingSave(false);
+        showSnackbar(`You must have exactly ${numParticipants} participants to finish.`, 'error');
+        return;  // Impede que o restante do código seja executado
+    }
+
     try {
-      // Preparar os dados da edição para envio
-      const editionPayload = {
-        name: editionData.name,
-        start_date: editionData.startDate,
-        type: editionData.tournamentType, // Aqui o type vai ser o tipo do torneio
-        n_participants: editionData.numParticipants,
-        current_phase: 1, // Começa na primeira fase
-        tourney_id: tourneyId,
-        edition_order: 1,
-      };
-
-      // Criar a edição
-      const editionResponse = await createEdition(editionPayload);
-
-      // Verificar se é um torneio de eliminação simples e criar o torneio
-      if (editionData.tournamentType === 'Single Elimination') {
-        const tournamentPayload = {
-          id_edition: editionResponse.data.edition.id,
-          id_phase:editionResponse.data.phases_ids[0],
-          n_participants: editionData.numParticipants,
-          participants: participantNames,
-          isRandomDraw: editionData.eliminationType === "computer", // Manual ou Computador
+        // Preparar os dados da edição para envio
+        const editionPayload = {
+            name: editionData.name,
+            start_date: editionData.startDate,
+            type: editionData.tournamentType,
+            n_participants: numParticipants,
+            current_phase: 1,
+            tourney_id: tourneyId,
+            edition_order: 1,
         };
 
-        await createSingleEliminationTournament(tournamentPayload);
-      }
+        // Criar a edição
+        const editionResponse = await createEdition(editionPayload);
 
-      showSnackbar('Edition created successfully!', 'success');
-      onEditionCreated();
-      onClose(); // Fecha o modal após concluir
+        // Verificar se é um torneio de eliminação simples e criar o torneio
+        if (editionData.tournamentType === 'Single Elimination') {
+            const tournamentPayload = {
+                id_edition: editionResponse.data.edition.id,
+                id_phase: editionResponse.data.phases_ids[0],
+                n_participants: numParticipants,
+                participants: participantNames,
+                isRandomDraw: editionData.eliminationType === "computer", // Manual ou Computador
+            };
+
+            await createSingleEliminationTournament(tournamentPayload);
+        }
+
+        showSnackbar('Edition created successfully!', 'success');
+        onEditionCreated();
+        onClose();
+        setLoadingSave(false); // Fecha o modal após concluir
 
     } catch (error) {
-      console.error('Error creating edition or tournament:', error);
-      showSnackbar('Failed to create edition', 'error');
+        console.error('Error creating edition or tournament:', error);
+        setLoadingSave(false);
+        showSnackbar('Failed to create edition', 'error');
     }
   };
+
 
   const isManual = editionData.eliminationType === 'manual';
 
@@ -241,11 +257,12 @@ const CreateEditionModal = ({ isOpen, onClose, tourneyId, onEditionCreated }) =>
           <div className={`flex ${currentStep === 0 ? 'justify-end w-full' : 'justify-end'}`}>
             {currentStep === steps.length - 1 ? (
               <button
+                className="px-4 py-2 bg-[#8B0000] text-white rounded hover:bg-[#a10505] transition-colors duration-300 flex items-center"
                 onClick={handleFinish}
-                className="bg-[#B22222] text-white py-2 px-4 rounded-md hover:bg-[#9B1B1B] transition duration-200"
-              >
-                Finish
-              </button>
+                disabled={loadingFinish}
+            >
+                {loadingFinish ? <ClipLoader color="#FFFFFF" loading={loadingFinish} size={20} /> : <> Finish</>}
+            </button>
             ) : (
               <button
                 onClick={handleNextStep}

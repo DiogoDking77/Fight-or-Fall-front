@@ -9,18 +9,18 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 
 function TourneyPage() {
   const { id } = useParams();
-const [tourney, setTourney] = useState(null);
-const [loading, setLoading] = useState(true);
-const [isModalOpen, setIsModalOpen] = useState(false);
-const [isCreateEditionModalOpen, setIsCreateEditionModalOpen] = useState(false);
-const [activeEdition, setActiveEdition] = useState(null);
-const [hasEditions, setHasEditions] = useState(false);
-const [activeRoundIndex, setActiveRoundIndex] = useState(0);
-const [matchesByRound, setMatchesByRound] = useState({});
-const [updatedMatchesByRound, setUpdatedMatchesByRound] = useState({}); // Copia para armazenar resultados
-const [loadingEdition, setLoadingEdition] = useState(false);
-const [loadingSave, setLoadingSave] = useState(false); // Adicionando estado para controle do spinner durante o save
-const { showSnackbar } = useSnackbar(); // Hook para o Snackbar
+  const [tourney, setTourney] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateEditionModalOpen, setIsCreateEditionModalOpen] = useState(false);
+  const [activeEdition, setActiveEdition] = useState(null);
+  const [hasEditions, setHasEditions] = useState(false);
+  const [activeRoundIndex, setActiveRoundIndex] = useState(0);
+  const [matchesByRound, setMatchesByRound] = useState({});
+  const [updatedMatchesByRound, setUpdatedMatchesByRound] = useState({}); // Copia para armazenar resultados
+  const [loadingEdition, setLoadingEdition] = useState(false);
+  const [loadingSave, setLoadingSave] = useState(false); // Adicionando estado para controle do spinner durante o save
+  const { showSnackbar } = useSnackbar(); // Hook para o Snackbar
 
 
 
@@ -126,27 +126,30 @@ const fetchMatchesForEdition = async (edition) => {
 
     // Verificar se há empates
     for (const roundKey in updatedMatchesByRound) {
-      const matches = updatedMatchesByRound[roundKey];
-      for (const match of matches) {
-        const score1 = match.score1;
-        const score2 = match.score2;
-    
-        // Verifica se ambos os scores estão vazios
-        const areScoresEmpty = (score1 === "" && score2 === "") || (score1 === undefined && score2 === undefined);
-    
-        // Permitir que scores sejam em branco (""), mas impedir empates se ambos forem números inteiros
-        const isScore1Valid = score1 !== "" || score1 !== undefined;
-        const isScore2Valid = score2 !== "" || score2 !== undefined;
-    
-        // Verifica se ambos os scores são válidos e se são iguais, ignorando se ambos estão vazios
-        if (!areScoresEmpty && isScore1Valid && isScore2Valid && score1 === score2) {
-          showSnackbar('Empates não são permitidos nas partidas!', 'error'); // Exibe a mensagem de erro
-          setLoadingSave(false);
-          return; // Não prosseguir se houver empate
+        const matches = updatedMatchesByRound[roundKey];
+        for (const match of matches) {
+            const score1 = match.score1;
+            const score2 = match.score2;
+
+            // Permitir que scores sejam em branco ("" ou null), mas impedir empates se ambos forem números inteiros
+            const isScore1Valid = score1 !== "" && score1 !== null;
+            const isScore2Valid = score2 !== "" && score2 !== null;
+
+            // Verifica se ambos os scores são válidos e se são iguais
+            if (isScore1Valid && isScore2Valid) {
+                // Converte os scores para números inteiros para comparação
+                const numScore1 = parseInt(score1, 10);
+                const numScore2 = parseInt(score2, 10);
+
+                // Verifica se ambos os scores são números e iguais
+                if (!isNaN(numScore1) && !isNaN(numScore2) && numScore1 === numScore2) {
+                    showSnackbar('Empates não são permitidos nas partidas!', 'error'); // Exibe a mensagem de erro
+                    setLoadingSave(false);
+                    return; // Não prosseguir se houver empate
+                }
+            }
         }
-      }
     }
-    
 
     for (const roundKey in updatedMatchesByRound) {
         const matches = updatedMatchesByRound[roundKey];
@@ -186,6 +189,7 @@ const fetchMatchesForEdition = async (edition) => {
         setLoadingSave(false); // Desativando o loading do save
     }
 };
+
 
   
   
@@ -338,7 +342,7 @@ const fetchMatchesForEdition = async (edition) => {
 
           </div>
         ) : (
-          <div className="text-center">
+          <div className="flex flex-col justify-center items-center h-full">
             <img
               src={editionImage}
               alt="No Editions" className="mx-auto mb-4 w-32 h-auto" />
@@ -359,8 +363,30 @@ const fetchMatchesForEdition = async (edition) => {
 
       {/* Modal for creating new edition */}
       {isCreateEditionModalOpen && (
-        <CreateEditionModal onClose={closeCreateEditionModal} onCreate={refreshTourney} />
-      )}
+          <CreateEditionModal 
+            isOpen={isCreateEditionModalOpen} 
+            onClose={closeCreateEditionModal} 
+            tourneyId ={tourney.id}
+            onEditionCreated={refreshTourney}
+          />
+        )}
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-[#0C0909] p-6 rounded-lg shadow-lg w-full max-w-md text-white border-2 border-[#B22222]">
+              <h2 className="text-xl font-bold mb-4">{tourney.name}</h2>
+              <p><strong>Theme:</strong> {tourney.theme_name}</p>
+              <p><strong>Description:</strong> {tourney.description}</p>
+              <p><strong>Creator:</strong> {tourney.creator_name}</p>
+              <button
+                onClick={closeModal}
+                className="mt-6 w-full bg-[#B22222] text-white py-2 rounded-md hover:bg-[#9B1B1B] transition duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
